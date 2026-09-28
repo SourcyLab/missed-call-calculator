@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Missed-Call Cost Calculator for Contractors | Free, Open Source</title>
+<meta name="description" content="Estimate how much revenue missed phone calls may be costing your contracting business. Free, open-source calculator. Uses only the numbers you enter. Nothing is stored or sent.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://sourcylab.github.io/missed-call-calculator/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sourcylab.github.io/missed-call-calculator/">
+<meta property="og:title" content="Missed-Call Cost Calculator for Contractors">
+<meta property="og:description" content="Estimate how much revenue missed phone calls may be costing your contracting business. Free, open source, runs in your browser.">
+<style>
+  :root {
+    --bg: #020617;
+    --panel: #0a1628;
+    --panel-2: #060f1e;
+    --text: #f8fafc;
+    --muted: #cbd5e1;
+    --muted-2: #94a3b8;
+    --teal: #17eeb4;
+    --blue: #2194f2;
+    --grad: linear-gradient(135deg, #17eeb4, #2194f2);
+    --border: rgba(255,255,255,0.14);
+    --error: #fda4af;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Geist', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    font-size: 1.0625rem;
+  }
+  a { color: var(--teal); text-underline-offset: 3px; }
+  a:hover { color: #7ff7d6; }
+  :focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+  .skip { position: absolute; left: -9999px; top: 0; background: var(--teal); color: #020617; padding: .5rem 1rem; z-index: 10; }
+  .skip:focus { left: 1rem; top: 1rem; }
+  header, main, footer { max-width: 920px; margin: 0 auto; padding: 0 1.25rem; }
+  header { padding-top: 2.5rem; }
+  .eyebrow { display: inline-block; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-2); border: 1px solid var(--border); border-radius: 999px; padding: .2rem .75rem; }
+  h1 { font-size: clamp(1.8rem, 5vw, 2.6rem); line-height: 1.15; margin: .8rem 0 .6rem; }
+  h1 span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  h2 { font-size: 1.45rem; margin: 2.5rem 0 .75rem; }
+  h3 { font-size: 1.1rem; margin: 1.25rem 0 .4rem; }
+  p, li { color: var(--muted); }
+  .lede { font-size: 1.125rem; color: var(--text); max-width: 60ch; }
+  .card { background: linear-gradient(160deg, var(--panel), var(--panel-2)); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-top: 1.5rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem 1.25rem; }
+  fieldset { border: 0; margin: 0; padding: 0; }
+  legend { font-weight: 600; font-size: 1.1rem; margin-bottom: .75rem; color: var(--text); }
+  label { display: block; font-weight: 600; font-size: .95rem; color: var(--text); margin-bottom: .3rem; }
+  .hint { display: block; font-size: .85rem; color: var(--muted-2); margin-top: .25rem; }
+  .input-wrap { position: relative; display: flex; align-items: center; }
+  .input-wrap .affix { position: absolute; color: var(--muted-2); pointer-events: none; font-size: .95rem; }
+  .input-wrap .pre { left: .8rem; }
+  .input-wrap .suf { right: .8rem; }
+  input[type="number"] {
+    width: 100%; min-height: 44px; font: inherit; color: var(--text);
+    background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 10px;
+    padding: .6rem .9rem;
+  }
+  input.has-pre { padding-left: 1.7rem; }
+  input.has-suf { padding-right: 2rem; }
+  input[aria-invalid="true"] { border-color: var(--error); }
+  .field-error { color: var(--error); font-size: .85rem; min-height: 1.1em; margin-top: .2rem; }
+  .actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.25rem; }
+  button { font: inherit; font-weight: 600; min-height: 44px; border-radius: 10px; padding: .55rem 1.1rem; cursor: pointer; }
+  .btn-primary { background: var(--grad); color: #020617; border: 0; }
+  .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .example-note { font-size: .9rem; color: var(--muted-2); margin-top: .75rem; }
+  .example-note[hidden] { display: none; }
+  .badge { display: inline-block; background: rgba(23,238,180,.12); color: var(--teal); border: 1px solid rgba(23,238,180,.4); border-radius: 6px; padding: .05rem .45rem; font-size: .8rem; font-weight: 600; }
+  .results { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; margin-top: 1rem; }
+  .stat { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; }
+  .stat dt { font-size: .85rem; color: var(--muted-2); }
+  .stat dd { margin: .25rem 0 0; font-size: 1.5rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  .stat.highlight { border-color: rgba(23,238,180,.55); }
+  .stat.highlight dd { color: var(--teal); }
+  .status { margin-top: 1rem; color: var(--muted); }
+  .formula { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; padding: .9rem 1rem; overflow-x: auto; color: var(--text); font-size: .95rem; }
+  table { width: 100%; border-collapse: collapse; margin-top: .75rem; font-size: .95rem; }
+  th, td { text-align: left; padding: .55rem .6rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--text); }
+  td { color: var(--muted); }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  details { border: 1px solid var(--border); border-radius: 12px; padding: .8rem 1rem; margin-top: .75rem; background: rgba(255,255,255,0.03); }
+  summary { cursor: pointer; font-weight: 600; color: var(--text); }
+  footer { margin-top: 3rem; padding-top: 1.5rem; padding-bottom: 3rem; border-top: 1px solid var(--border); font-size: .92rem; }
+  footer p { color: var(--muted-2); }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+  @media print {
+    body { background: #fff; color: #000; }
+    .card, .stat, details { background: #fff; border-color: #999; }
+    p, li, td, .stat dd, .stat dt, label, legend, h1, h2, h3 { color: #000 !important; }
+    h1 span { color: #000; -webkit-text-fill-color: #000; }
+    .actions, .skip { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; transition: none; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#calculator">Skip to calculator</a>
+
+<header>
+  <span class="eyebrow">Free tool · Open source · Runs in your browser</span>
+  <h1>Missed-Call Cost <span>Calculator</span> for Contractors</h1>
+  <p class="lede">This calculator estimates how much revenue your contracting business may be losing when phone calls go unanswered and the caller doesn't try again. It uses only the numbers you type in. It doesn't pull in industry averages, so the result is only as good as your inputs.</p>
+  <p><small>Updated September 28, 2026 · Built by Sourcy Inc., Florida</small></p>
+</header>
+
+<main id="main">
+  <section class="card" id="calculator" aria-labelledby="calc-title">
+    <h2 id="calc-title" style="margin-top:0">Your numbers</h2>
+    <p>Fill in every field with your own figures. Not sure where to start? Load the example values, then replace them with yours.</p>
+
+    <form id="calc-form" novalidate>
+      <fieldset>
+        <legend>Calls and leads</legend>
+        <div class="grid">
+          <div>
+            <label for="calls">Inbound calls per month</label>
+            <div class="input-wrap">
+              <input type="number" id="calls" name="calls" inputmode="decimal" min="0" step="1" aria-describedby="calls-hint calls-err">
+            </div>
+            <span class="hint" id="calls-hint">All inbound calls to your business line(s) in a typical month.</span>
+            <div class="field-error" id="calls-err" aria-live="polite"></div>
+          </div>
+          <div>
+            <label for="missedPct">Calls missed (not answered live)</label>
+            <div class="input-wrap">
+              <input type="number" id="missedPct" name="missedPct" class="has-suf" inputmode="decimal" min="0" max="100" step="any" aria-describedby="missedPct-hint missedPct-err">
+              <span class="affix suf" aria-hidden="true">%</span>
+            </div>
+            <span class="hint" id="missedPct-hint">Your estimate. Your phone or VoIP call log is the best source.</span>
+            <div class="field-error" id="missedPct-err" aria-live="polite"></div>
+          </div>
+          <div>
+            <label for="noCallbackPct">Missed callers who don't call back or who go elsewhere</label>
+            <div class="input-wrap">
+              <input type="number" id="noCallbackPct" name="noCallbackPct" class="has-suf" inputmode="decimal" min="0" max="100" step="any" aria-describedby="noCallbackPct-hint noCallbackPct-err">
+              <span class="affix suf" aria-hidden="true">%</span>
+            </div>
+            <span class="hint" id="noCallbackPct-hint">Your estimate. Of the calls you missed, the share you never reconnected with.</span>
+            <div class="field-error" id="noCallbackPct-err" aria-live="polite"></div>
+          </div>
+          <div>
+            <label for="leadPct">Calls that are real new-job leads</label>
+            <div class="input-wrap">
+              <input type="number" id="leadPct" name="leadPct" class="has-suf" inputmode="decimal" min="0" max="100" step="any" aria-describedby="leadPct-hint leadPct-err">
+              <span class="affix suf" aria-hidden="true">%</span>
+            </div>
+            <span class="hint" id="leadPct-hint">Your estimate. Leave out vendors, spam, and existing-customer calls.</span>
+            <div class="field-error" id="leadPct-err" aria-live="polite"></div>
+          </div>
+          <div>
+            <label for="closePct">Close rate on leads</label>
+            <div class="input-wrap">
+              <input type="number" id="closePct" name="closePct" class="has-suf" inputmode="decimal" min="0" max="100" step="any" aria-describedby="closePct-hint closePct-err">
+              <span class="affix suf" aria-hidden="true">%</span>
+            </div>
+            <span class="hint" id="closePct-hint">Your estimate. Out of every 100 leads you talk to, how many become paid jobs?</span>
+            <div class="field-error" id="closePct-err" aria-live="polite"></div>
+          </div>
+          <div>
+            <label for="jobValue">Average job value</label>
+            <div class="input-wrap">
+              <span class="affix pre" aria-hidden="true">$</span>
+              <input type="number" id="jobValue" name="jobValue" class="has-pre" inputmode="decimal" min="0" step="any" aria-describedby="jobValue-hint jobValue-err">
+            </div>
+            <span class="hint" id="jobValue-hint">Average revenue per job, in US dollars.</span>
+            <div class="field-error" id="jobValue-err" aria-live="polite"></div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset style="margin-top:1.25rem">
+        <legend>Break-even check</legend>
+        <div class="grid">
+          <div>
+            <label for="solutionCost">Your monthly cost (optional)</label>
+            <div class="input-wrap">
+              <span class="affix pre" aria-hidden="true">$</span>
+              <input type="number" id="solutionCost" name="solutionCost" class="has-pre" inputmode="decimal" min="0" step="any" aria-describedby="solutionCost-hint solutionCost-err">
+            </div>
+            <span class="hint" id="solutionCost-hint">Leave blank if you don't need a break-even figure. There's no default value.</span>
+            <div class="field-error" id="solutionCost-err" aria-live="polite"></div>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="submit" class="btn-primary">Calculate</button>
+        <button type="button" class="btn-ghost" id="load-example">Load example values</button>
+        <button type="button" class="btn-ghost" id="clear">Clear</button>
+      </div>
+      <p class="example-note" id="example-note" hidden><span class="badge">Example values</span> These are made-up numbers to show how the tool works. They are not industry data. "Your monthly cost" is left empty on purpose; enter your own if you want a break-even figure. Replace every field with your own numbers.</p>
+    </form>
+
+    <h2 id="results-title">Estimated results</h2>
+    <p class="status" id="status" role="status" aria-live="polite">Enter all six numbers above to see your estimate.</p>
+    <dl class="results" aria-labelledby="results-title">
+      <div class="stat"><dt>Lost leads per month</dt><dd id="out-leads">&mdash;</dd></div>
+      <div class="stat"><dt>Lost jobs per month</dt><dd id="out-jobs">&mdash;</dd></div>
+      <div class="stat highlight"><dt>Estimated revenue lost per month</dt><dd id="out-month">&mdash;</dd></div>
+      <div class="stat highlight"><dt>Estimated revenue lost per year</dt><dd id="out-year">&mdash;</dd></div>
+      <div class="stat"><dt>Recovered jobs per month to break even</dt><dd id="out-breakeven">&mdash;</dd></div>
+    </dl>
+    <p class="hint" id="breakeven-note">The break-even figure shows how many recovered jobs a month would cover the monthly cost you entered. It stays blank if you leave "Your monthly cost" empty.</p>
+  </section>
+
+  <section aria-labelledby="what">
+    <h2 id="what">What this estimate tells you, and what it doesn't</h2>
+    <p>The calculator follows each missed call down a simple funnel: missed, not recovered, a real lead, a job you would have closed, and the revenue that job would have brought in. It shows you the size of the leak using your own numbers. It can't tell you how many of those calls you would actually win back with any particular fix. The estimate is only as accurate as the percentages you type in, so it's worth measuring them (see below) instead of guessing.</p>
+  </section>
+
+  <section aria-labelledby="math">
+    <h2 id="math">How the math works</h2>
+    <p class="formula">lost revenue per month = calls &times; missed% &times; no-callback% &times; lead% &times; close% &times; average job value</p>
+    <p>Annual lost revenue is the monthly figure &times; 12. Break-even jobs per month = your monthly cost &divide; average job value (only if you enter one).</p>
+    <h3>Worked example <span class="badge">Example values, not data</span></h3>
+    <p>These made-up numbers are the same ones the "Load example values" button fills in.</p>
+    <table>
+      <caption class="sr-only">Worked example of the missed-call cost formula using illustrative inputs</caption>
+      <thead><tr><th scope="col">Step</th><th scope="col">Math</th><th scope="col" class="num">Result</th></tr></thead>
+      <tbody>
+        <tr><td>Inbound calls per month</td><td>example input</td><td class="num">200</td></tr>
+        <tr><td>Missed calls</td><td>200 &times; 20%</td><td class="num">40</td></tr>
+        <tr><td>Missed callers who don't call back</td><td>40 &times; 60%</td><td class="num">24</td></tr>
+        <tr><td>Lost leads</td><td>24 &times; 50%</td><td class="num">12</td></tr>
+        <tr><td>Lost jobs</td><td>12 &times; 30%</td><td class="num">3.6</td></tr>
+        <tr><td>Revenue lost per month</td><td>3.6 &times; $1,500</td><td class="num">$5,400</td></tr>
+        <tr><td>Revenue lost per year</td><td>$5,400 &times; 12</td><td class="num">$64,800</td></tr>
+      </tbody>
+    </table>
+    <p>For the break-even line, enter your own figure in "Your monthly cost (optional)". The example leaves it blank on purpose. Break-even = your monthly cost &divide; your average job value. Your numbers will be different.</p>
+  </section>
+
+  <section aria-labelledby="measure">
+    <h2 id="measure">How to measure your own missed-call rate</h2>
+    <ol>
+      <li><strong>Pull your call logs.</strong> Most phone carriers and VoIP systems let you export call history showing answered, missed, and voicemail calls. Export at least two full weeks.</li>
+      <li><strong>Count answered vs. unanswered.</strong> Missed% = unanswered inbound calls &divide; all inbound calls. Count calls that rang out and calls sent to voicemail as missed.</li>
+      <li><strong>Check voicemail volume.</strong> Compare the number of voicemails left with the number of missed calls. The gap is roughly the callers who hung up without leaving a message.</li>
+      <li><strong>Track callbacks.</strong> For the same two weeks, note which missed numbers called back or that you reached later. That gives you your no-callback%.</li>
+      <li><strong>Tag lead calls.</strong> Mark which calls were new-job inquiries, as opposed to vendors, spam, or existing customers, to estimate lead%.</li>
+      <li><strong>Use your own close rate.</strong> Your CRM, job board, or even a spreadsheet of estimates sent vs. jobs won works.</li>
+    </ol>
+    <p>Measure during both a busy stretch and a slow one. Missed calls tend to bunch up when crews are on jobsites, after hours, and during storm seasons.</p>
+  </section>
+
+  <section aria-labelledby="recover">
+    <h2 id="recover">Ways to recover missed calls (and the tradeoffs)</h2>
+    <table>
+      <caption class="sr-only">Options for handling missed calls with pros and cons</caption>
+      <thead><tr><th scope="col">Option</th><th scope="col">Good for</th><th scope="col">Watch out for</th></tr></thead>
+      <tbody>
+        <tr><td>Call forwarding to a teammate or cell</td><td>Cheap and fast to set up</td><td>Still depends on someone being free to pick up. It can pull crew leads off the job.</td></tr>
+        <tr><td>Live answering service</td><td>A real person answers, including after hours</td><td>Agents may not know your services or pricing, so quality varies. Check how leads are handed off to you.</td></tr>
+        <tr><td>Automatic text-back on missed calls</td><td>Starts a conversation with callers who won't leave a voicemail</td><td>Someone still has to follow up. Check texting consent and opt-out rules with your provider.</td></tr>
+        <tr><td>AI receptionist</td><td>Answers every call, takes job details, and can book or route 24/7</td><td>Needs a good setup: your services, service area, and when to hand off to a person. Some callers still want a human.</td></tr>
+        <tr><td>A set callback routine</td><td>Free, and builds a good habit (for example, returning every missed call within a set window)</td><td>Easy to let slide on busy days, and it doesn't help with callers who have already called a competitor.</td></tr>
+      </tbody>
+    </table>
+    <p>Many contractors combine two or more of these options. If you'd like to see how an AI receptionist handles missed calls, <a href="https://sourcyinc.com/ai-receptionist-pricing?utm_source=github&amp;utm_medium=offsite&amp;utm_campaign=parasite-pilot">see how Sourcy's AI receptionist handles missed calls</a>.</p>
+  </section>
+
+  <section aria-labelledby="faq">
+    <h2 id="faq">FAQ</h2>
+    <details>
+      <summary>Is this accurate?</summary>
+      <p>The math is simple multiplication, so it's exact for the numbers you enter. How close the result is to reality depends on your inputs. Use numbers from your call logs and job records wherever you can, and treat the output as an estimate, not a forecast.</p>
+    </details>
+    <details>
+      <summary>What's a normal missed-call rate for contractors?</summary>
+      <p>We deliberately don't quote an "average" here. We couldn't find a primary-source figure we'd be comfortable citing, and rates vary a lot by trade, crew size, and season. Your own call log over two weeks will tell you far more than an industry number would.</p>
+    </details>
+    <details>
+      <summary>Does text-back work?</summary>
+      <p>It can help reach callers who hang up without leaving a voicemail, because it opens a conversation they can answer when they're free. How well it works for you depends on how quickly someone follows up. The best way to find out is to measure it: compare your no-callback% before and after you turn it on.</p>
+    </details>
+    <details>
+      <summary>Is my data stored or sent anywhere?</summary>
+      <p>No. Everything is calculated in your browser with plain JavaScript. The page has no analytics, no cookies, no tracking scripts, and no form submission to a server. You can read the full source code in the repository.</p>
+    </details>
+  </section>
+</main>
+
+<footer>
+  <p>Built by Sourcy Inc. (sourcyinc.com), Florida. Open source under the <a href="LICENSE">MIT license</a>. Florida contractors comparing options can also read about <a href="https://sourcyinc.com/ai-receptionist-florida?utm_source=github&amp;utm_medium=offsite&amp;utm_campaign=parasite-pilot">AI receptionists for Florida businesses</a>.</p>
+  <p>This tool gives estimates only, based entirely on the numbers you enter. It is not financial advice. Updated September 28, 2026.</p>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var FIELDS = [
+    { id: 'calls', kind: 'count', required: true },
+    { id: 'missedPct', kind: 'pct', required: true },
+    { id: 'noCallbackPct', kind: 'pct', required: true },
+    { id: 'leadPct', kind: 'pct', required: true },
+    { id: 'closePct', kind: 'pct', required: true },
+    { id: 'jobValue', kind: 'money', required: true },
+    { id: 'solutionCost', kind: 'money', required: false }
+  ];
+
+  // Illustrative example inputs ONLY. These are not industry data and not a price quote.
+  var EXAMPLE = { calls: 200, missedPct: 20, noCallbackPct: 60, leadPct: 50, closePct: 30, jobValue: 1500 };
+
+  // Pure function: all math lives here so it can be tested.
+  function computeMissedCallCost(v) {
+    var missedCalls = v.calls * (v.missedPct / 100);
+    var lostCallers = missedCalls * (v.noCallbackPct / 100);
+    var lostLeads = lostCallers * (v.leadPct / 100);
+    var lostJobs = lostLeads * (v.closePct / 100);
+    var lostRevenueMonthly = lostJobs * v.jobValue;
+    var lostRevenueYearly = lostRevenueMonthly * 12;
+    var breakEvenJobs = null;
+    if (typeof v.solutionCost === 'number' && isFinite(v.solutionCost) && v.jobValue > 0) {
+      breakEvenJobs = v.solutionCost / v.jobValue;
+    }
+    return {
+      missedCalls: missedCalls,
+      lostCallers: lostCallers,
+      lostLeads: lostLeads,
+      lostJobs: lostJobs,
+      lostRevenueMonthly: lostRevenueMonthly,
+      lostRevenueYearly: lostRevenueYearly,
+      breakEvenJobs: breakEvenJobs
+    };
+  }
+
+  var money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+  function num(n) {
+    return new Intl.NumberFormat('en-US', { maximumFractionDigits: n < 10 ? 2 : 1 }).format(n);
+  }
+
+  function $(id) { return document.getElementById(id); }
+
+  function readField(f) {
+    var el = $(f.id);
+    var raw = el.value.trim();
+    var err = '';
+    var value = null;
+    if (raw === '') {
+      if (f.required) err = 'Required.';
+    } else {
+      value = Number(raw);
+      if (!isFinite(value)) err = 'Enter a number.';
+      else if (value < 0) err = 'Must be 0 or more.';
+      else if (f.kind === 'pct' && value > 100) err = 'Must be between 0 and 100.';
+    }
+    return { value: value, err: err, el: el };
+  }
+
+  function showError(f, r, show) {
+    var msg = show ? r.err : '';
+    $(f.id + '-err').textContent = msg;
+    if (msg) r.el.setAttribute('aria-invalid', 'true'); else r.el.removeAttribute('aria-invalid');
+  }
+
+  function clearOutputs(message) {
+    ['out-leads', 'out-jobs', 'out-month', 'out-year', 'out-breakeven'].forEach(function (id) { $(id).textContent = '\u2014'; });
+    $('status').textContent = message;
+  }
+
+  function update(showAllErrors) {
+    var values = {};
+    var ok = true;
+    var anyEntered = false;
+    FIELDS.forEach(function (f) {
+      var r = readField(f);
+      if (r.el.value.trim() !== '') anyEntered = true;
+      var showThis = showAllErrors || r.el.value.trim() !== '';
+      showError(f, r, showThis);
+      if (r.err) ok = false;
+      values[f.id] = r.value;
+    });
+    if (!ok) {
+      clearOutputs(anyEntered ? 'Check the highlighted fields. The estimate appears once all six required numbers are valid.' : 'Enter all six numbers above to see your estimate.');
+      return null;
+    }
+    var res = computeMissedCallCost(values);
+    $('out-leads').textContent = num(res.lostLeads);
+    $('out-jobs').textContent = num(res.lostJobs);
+    $('out-month').textContent = money.format(res.lostRevenueMonthly);
+    $('out-year').textContent = money.format(res.lostRevenueYearly);
+    $('out-breakeven').textContent = res.breakEvenJobs === null ? '\u2014' : num(res.breakEvenJobs) + ' jobs';
+    $('status').textContent = 'Estimate: about ' + money.format(res.lostRevenueMonthly) + ' a month (' + money.format(res.lostRevenueYearly) + ' a year) in revenue from missed calls, based on the numbers you entered.';
+    return res;
+  }
+
+  function init() {
+    var form = $('calc-form');
+    form.addEventListener('submit', function (e) { e.preventDefault(); update(true); });
+    form.addEventListener('input', function () { $('example-note').hidden = !form.dataset.example; update(false); });
+    $('load-example').addEventListener('click', function () {
+      Object.keys(EXAMPLE).forEach(function (k) { $(k).value = EXAMPLE[k]; });
+      $('solutionCost').value = ''; // no example cost: nothing should read as a price
+      form.dataset.example = '1';
+      $('example-note').hidden = false;
+      update(true);
+    });
+    $('clear').addEventListener('click', function () {
+      FIELDS.forEach(function (f) { $(f.id).value = ''; showError(f, { err: '', el: $(f.id) }, false); });
+      delete form.dataset.example;
+      $('example-note').hidden = true;
+      clearOutputs('Enter all six numbers above to see your estimate.');
+      $('calls').focus();
+    });
+  }
+
+  // Expose for tests (harmless in the browser).
+  window.MissedCallCalc = { compute: computeMissedCallCost, update: update, EXAMPLE: EXAMPLE };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+</body>
+</html>
