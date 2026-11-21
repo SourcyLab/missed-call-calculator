@@ -1,14 +1,14 @@
 # Missed-Call Cost Calculator for Contractors
 
-A free, open-source, single-page calculator that estimates how much revenue a contracting business may be losing to unanswered phone calls. It uses **only the numbers you type in**. There are no built-in industry averages, no tracking, and no server. Everything runs in your browser.
+Free, browser-only missed-call revenue estimator for service contractors.
 
-**Live tool:** https://sourcylab.github.io/missed-call-calculator/
+## Quickstart
 
-**Repo:** https://github.com/SourcyLab/missed-call-calculator
+1. Open the [live calculator](https://sourcylab.github.io/missed-call-calculator/).
+2. Select **Load example values** to see a synthetic estimate of $5,400 per month and $64,800 per year. Replace the example values with your own figures to calculate your estimate. All inputs stay in your browser.
+3. To use the calculator offline, download [`index.html`](index.html) and open it directly in your browser. The example button and calculations work offline.
 
-Built and maintained by Sourcy Inc., Florida. MIT licensed.
-
----
+![Mobile calculator results with synthetic example values](docs/screenshot-mobile.png)
 
 ## Why this exists
 
@@ -88,7 +88,6 @@ The page includes a neutral comparison of the common options, with the tradeoffs
 
 ## Use it, fork it, embed it
 
-- **Use it:** open the [live page](https://sourcylab.github.io/missed-call-calculator/), or download `index.html` and open it locally. It works offline.
 - **Clone it:** `git clone https://github.com/SourcyLab/missed-call-calculator.git`
 - **Fork it:** click *Fork*, change the copy or colors in `index.html`, and enable GitHub Pages under **Settings → Pages → Deploy from branch → `main` / root**.
 - **No build step.** It's one HTML file with inline CSS and JS.
@@ -106,7 +105,7 @@ Issues and pull requests are welcome, especially accessibility fixes, translatio
 
 ## About
 
-Built by Sourcy Inc., a Florida AI implementation company. If you want to see how an AI receptionist can answer and route calls you'd otherwise miss, [see how Sourcy's AI receptionist handles missed calls](https://sourcyinc.com/ai-receptionist-pricing?utm_source=github&utm_medium=offsite&utm_campaign=parasite-pilot).
+Built by Sourcy Inc., a Florida AI implementation company. [Try the Nova AI call-handling demo](https://sourcyinc.com/?utm_source=github&utm_medium=referral&utm_campaign=oss_launch&utm_content=missed-call-calculator#nova).
 
 ## License
 
